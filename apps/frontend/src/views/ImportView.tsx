@@ -2,7 +2,15 @@ import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
 import { getBackendUrl } from "../api/client";
-import { createImportDatasetMutationOptions } from "../api/dataset";
+import {
+  createDiscretizeMutationOptions,
+  createEncodeMutationOptions,
+  createExtremesMutationOptions,
+  createImportDatasetMutationOptions,
+  createNormalizeMutationOptions,
+  createRescaleMutationOptions,
+  type ImportResponse,
+} from "../api/dataset";
 import { ImportError } from "../components/import/ImportError";
 import {
   ImportForm,
@@ -27,11 +35,13 @@ const initialState: ImportFormState = {
 
 export function ImportView() {
   const [state, setState] = useState<ImportFormState>(initialState);
+  const [preview, setPreview] = useState<ImportResponse | null>(null);
+  const [datasetId, setDatasetId] = useState<string | null>(null);
 
   const backendUrl = useMemo(() => getBackendUrl(), []);
 
-  const importMutation = useMutation(
-    createImportDatasetMutationOptions({
+  const importMutation = useMutation({
+    ...createImportDatasetMutationOptions({
       file: state.file,
       sourceType: state.sourceType,
       hasHeader: state.hasHeader,
@@ -40,7 +50,38 @@ export function ImportView() {
       sheetName: state.sheetName,
       maxPreviewRows: 50,
     }),
-  );
+    onSuccess: (data) => {
+      setPreview(data);
+      setDatasetId(data.datasetId ?? null);
+    },
+  });
+
+  const encodeMutation = useMutation({
+    ...createEncodeMutationOptions(),
+    onSuccess: (data) => setPreview(data),
+  });
+
+  const discretizeMutation = useMutation({
+    ...createDiscretizeMutationOptions(),
+    onSuccess: (data) => setPreview(data),
+  });
+
+  const normalizeMutation = useMutation({
+    ...createNormalizeMutationOptions(),
+    onSuccess: (data) => setPreview(data),
+  });
+
+  const rescaleMutation = useMutation({
+    ...createRescaleMutationOptions(),
+    onSuccess: (data) => setPreview(data),
+  });
+
+  const extremesMutation = useMutation({
+    ...createExtremesMutationOptions(),
+    onSuccess: (data) => setPreview(data),
+  });
+
+  const hasDataset = Boolean(datasetId);
 
   return (
     <div className="min-h-screen px-6 py-10 md:px-12">
@@ -81,9 +122,63 @@ export function ImportView() {
         {importMutation.isError ? (
           <ImportError message={(importMutation.error as Error).message} />
         ) : null}
+        {encodeMutation.isError ? (
+          <ImportError message={(encodeMutation.error as Error).message} />
+        ) : null}
+        {discretizeMutation.isError ? (
+          <ImportError message={(discretizeMutation.error as Error).message} />
+        ) : null}
+        {normalizeMutation.isError ? (
+          <ImportError message={(normalizeMutation.error as Error).message} />
+        ) : null}
+        {rescaleMutation.isError ? (
+          <ImportError message={(rescaleMutation.error as Error).message} />
+        ) : null}
+        {extremesMutation.isError ? (
+          <ImportError message={(extremesMutation.error as Error).message} />
+        ) : null}
 
-        {importMutation.data ? (
-          <ImportPreview data={importMutation.data} />
+        {preview ? (
+          <ImportPreview
+            data={preview}
+            transformsDisabled={!hasDataset}
+            onEncode={(column, mode) =>
+              encodeMutation.mutate({
+                datasetId: datasetId ?? "",
+                columns: [column],
+                mode,
+              })
+            }
+            onDiscretize={(column, bins) =>
+              discretizeMutation.mutate({
+                datasetId: datasetId ?? "",
+                columns: [column],
+                bins,
+              })
+            }
+            onNormalize={(column) =>
+              normalizeMutation.mutate({
+                datasetId: datasetId ?? "",
+                columns: [column],
+              })
+            }
+            onRescale={(column, a, b) =>
+              rescaleMutation.mutate({
+                datasetId: datasetId ?? "",
+                columns: [column],
+                a,
+                b,
+              })
+            }
+            onExtremes={(column, percent) =>
+              extremesMutation.mutate({
+                datasetId: datasetId ?? "",
+                columns: [column],
+                percent,
+                maxPreviewRows: 50,
+              })
+            }
+          />
         ) : null}
       </div>
     </div>
