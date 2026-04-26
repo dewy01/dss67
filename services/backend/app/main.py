@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .controllers.dataset_controller import router as dataset_router
+
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Decision Support Backend", version="0.1.0")
+    app = FastAPI(title="Decision Support Backend", version="0.1.67")
 
     app.add_middleware(
         CORSMiddleware,
@@ -22,7 +24,9 @@ def create_app() -> FastAPI:
 
     @app.get("/info")
     def info() -> dict:
-        return {"name": "decision-support-backend", "version": "0.1.0"}
+        return {"name": "decision-support-backend", "version": "0.1.67"}
+
+    app.include_router(dataset_router)
 
     return app
 
