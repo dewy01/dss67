@@ -16,7 +16,11 @@ import { AppNavbar } from "../components/layout/AppNavbar";
 import { ScatterPlotPanel } from "../components/plots/ScatterPlotPanel";
 import { useDatasetStore } from "../store/datasetStore";
 
-export function ImportView() {
+export function ImportView({
+  onNavigate,
+}: {
+  onNavigate: (view: "import" | "classification") => void;
+}) {
   const state = useDatasetStore((store) => store.importForm);
   const preview = useDatasetStore((store) => store.preview);
   const datasetId = useDatasetStore((store) => store.datasetId);
@@ -74,6 +78,7 @@ export function ImportView() {
         backendUrl={backendUrl}
         isSubmitting={importMutation.isPending}
         onSubmit={() => importMutation.mutate()}
+        onNavigateToClassification={() => onNavigate("classification")}
       />
 
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10 md:px-12">

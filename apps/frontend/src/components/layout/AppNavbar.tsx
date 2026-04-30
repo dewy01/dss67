@@ -7,12 +7,14 @@ export type AppNavbarProps = {
   backendUrl: string;
   isSubmitting: boolean;
   onSubmit: () => void;
+  onNavigateToClassification?: () => void;
 };
 
 export function AppNavbar({
   backendUrl,
   isSubmitting,
   onSubmit,
+  onNavigateToClassification,
 }: AppNavbarProps) {
   return (
     <div className="sticky top-0 z-40 border-b border-border/60 bg-card/85 backdrop-blur">
@@ -26,6 +28,11 @@ export function AppNavbar({
           <CardDescription className="text-sm">
             Upload a dataset to refresh the preview.
           </CardDescription>
+          {onNavigateToClassification && (
+            <Button onClick={onNavigateToClassification} variant="default">
+              Classification
+            </Button>
+          )}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline">Import dataset</Button>

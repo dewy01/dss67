@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .controllers.dataset_controller import router as dataset_router
+from .controllers.classification_controller import router as classification_router
 
 
 def create_app() -> FastAPI:
@@ -27,6 +28,7 @@ def create_app() -> FastAPI:
         return {"name": "decision-support-backend", "version": "0.1.67"}
 
     app.include_router(dataset_router)
+    app.include_router(classification_router)
 
     return app
 
