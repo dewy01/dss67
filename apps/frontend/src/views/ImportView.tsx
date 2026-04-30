@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { getBackendUrl } from "../api/client";
 import {
@@ -9,34 +9,19 @@ import {
   createImportDatasetMutationOptions,
   createNormalizeMutationOptions,
   createRescaleMutationOptions,
-  type ImportResponse,
 } from "../api/dataset";
 import { ImportError } from "../components/import/ImportError";
-import {
-  ImportForm,
-  type ImportFormState,
-} from "../components/import/ImportForm";
 import { ImportPreview } from "../components/import/ImportPreview";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-
-const initialState: ImportFormState = {
-  file: null,
-  sourceType: "text",
-  hasHeader: false,
-  delimiter: "auto",
-  commentPrefix: "#",
-  sheetName: "",
-};
+import { AppNavbar } from "../components/layout/AppNavbar";
+import { ScatterPlotPanel } from "../components/plots/ScatterPlotPanel";
+import { useDatasetStore } from "../store/datasetStore";
 
 export function ImportView() {
-  const [state, setState] = useState<ImportFormState>(initialState);
-  const [preview, setPreview] = useState<ImportResponse | null>(null);
-  const [datasetId, setDatasetId] = useState<string | null>(null);
+  const state = useDatasetStore((store) => store.importForm);
+  const preview = useDatasetStore((store) => store.preview);
+  const datasetId = useDatasetStore((store) => store.datasetId);
+  const setPreview = useDatasetStore((store) => store.setPreview);
+  const setDatasetId = useDatasetStore((store) => store.setDatasetId);
 
   const backendUrl = useMemo(() => getBackendUrl(), []);
 
@@ -84,41 +69,14 @@ export function ImportView() {
   const hasDataset = Boolean(datasetId);
 
   return (
-    <div className="min-h-screen px-6 py-10 md:px-12">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <header className="space-y-4">
-          <p className="text-sm uppercase tracking-[0.4em] text-muted-foreground">
-            Module 1 · Data Ingestion
-          </p>
-          <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-            Decision Support Studio
-          </h1>
-          <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-            Upload a raw text dataset and preview the parsed output. Supported
-            separators: space, tab, or semicolon. Lines starting with a comment
-            marker are ignored.
-          </p>
-        </header>
+    <div className="min-h-screen">
+      <AppNavbar
+        backendUrl={backendUrl}
+        isSubmitting={importMutation.isPending}
+        onSubmit={() => importMutation.mutate()}
+      />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Import dataset</CardTitle>
-            <CardDescription>
-              Files are processed by the FastAPI backend and returned as a
-              preview table.
-            </CardDescription>
-          </CardHeader>
-          <div className="px-6 pb-6">
-            <ImportForm
-              state={state}
-              backendUrl={backendUrl}
-              isSubmitting={importMutation.isPending}
-              onSubmit={() => importMutation.mutate()}
-              onChange={setState}
-            />
-          </div>
-        </Card>
-
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10 md:px-12">
         {importMutation.isError ? (
           <ImportError message={(importMutation.error as Error).message} />
         ) : null}
@@ -139,46 +97,50 @@ export function ImportView() {
         ) : null}
 
         {preview ? (
-          <ImportPreview
-            data={preview}
-            transformsDisabled={!hasDataset}
-            onEncode={(column, mode) =>
-              encodeMutation.mutate({
-                datasetId: datasetId ?? "",
-                columns: [column],
-                mode,
-              })
-            }
-            onDiscretize={(column, bins) =>
-              discretizeMutation.mutate({
-                datasetId: datasetId ?? "",
-                columns: [column],
-                bins,
-              })
-            }
-            onNormalize={(column) =>
-              normalizeMutation.mutate({
-                datasetId: datasetId ?? "",
-                columns: [column],
-              })
-            }
-            onRescale={(column, a, b) =>
-              rescaleMutation.mutate({
-                datasetId: datasetId ?? "",
-                columns: [column],
-                a,
-                b,
-              })
-            }
-            onExtremes={(column, percent) =>
-              extremesMutation.mutate({
-                datasetId: datasetId ?? "",
-                columns: [column],
-                percent,
-                maxPreviewRows: 50,
-              })
-            }
-          />
+          <>
+            <ImportPreview
+              data={preview}
+              transformsDisabled={!hasDataset}
+              onEncode={(column, mode) =>
+                encodeMutation.mutate({
+                  datasetId: datasetId ?? "",
+                  columns: [column],
+                  mode,
+                })
+              }
+              onDiscretize={(column, bins) =>
+                discretizeMutation.mutate({
+                  datasetId: datasetId ?? "",
+                  columns: [column],
+                  bins,
+                })
+              }
+              onNormalize={(column) =>
+                normalizeMutation.mutate({
+                  datasetId: datasetId ?? "",
+                  columns: [column],
+                })
+              }
+              onRescale={(column, a, b) =>
+                rescaleMutation.mutate({
+                  datasetId: datasetId ?? "",
+                  columns: [column],
+                  a,
+                  b,
+                })
+              }
+              onExtremes={(column, percent) =>
+                extremesMutation.mutate({
+                  datasetId: datasetId ?? "",
+                  columns: [column],
+                  percent,
+                  maxPreviewRows: 50,
+                })
+              }
+            />
+
+            <ScatterPlotPanel columns={preview.columns} rows={preview.rows} />
+          </>
         ) : null}
       </div>
     </div>

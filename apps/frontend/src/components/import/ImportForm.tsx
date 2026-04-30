@@ -1,3 +1,4 @@
+import { useDatasetStore } from "../../store/datasetStore";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
@@ -11,20 +12,19 @@ export type ImportFormState = {
 };
 
 type ImportFormProps = {
-  state: ImportFormState;
   backendUrl: string;
   isSubmitting: boolean;
   onSubmit: () => void;
-  onChange: (next: ImportFormState) => void;
 };
 
 export function ImportForm({
-  state,
   backendUrl,
   isSubmitting,
   onSubmit,
-  onChange,
 }: ImportFormProps) {
+  const state = useDatasetStore((store) => store.importForm);
+  const setState = useDatasetStore((store) => store.setImportForm);
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-[1.2fr_0.8fr]">
@@ -36,7 +36,7 @@ export function ImportForm({
               state.sourceType === "text" ? ".txt,.data,.csv" : ".xlsx,.xls"
             }
             onChange={(event) =>
-              onChange({
+              setState({
                 ...state,
                 file: event.target.files?.[0] ?? null,
               })
@@ -50,7 +50,7 @@ export function ImportForm({
             value={state.sourceType}
             onChange={(event) => {
               const next = event.target.value as "text" | "excel";
-              onChange({
+              setState({
                 ...state,
                 sourceType: next,
                 hasHeader: next === "excel" ? true : state.hasHeader,
@@ -71,7 +71,7 @@ export function ImportForm({
               className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={state.delimiter}
               onChange={(event) =>
-                onChange({
+                setState({
                   ...state,
                   delimiter: event.target.value,
                 })
@@ -88,7 +88,7 @@ export function ImportForm({
             <Input
               value={state.commentPrefix}
               onChange={(event) =>
-                onChange({
+                setState({
                   ...state,
                   commentPrefix: event.target.value,
                 })
@@ -103,7 +103,7 @@ export function ImportForm({
             <Input
               value={state.sheetName}
               onChange={(event) =>
-                onChange({
+                setState({
                   ...state,
                   sheetName: event.target.value,
                 })
@@ -127,7 +127,7 @@ export function ImportForm({
             className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
             checked={state.hasHeader}
             onChange={(event) =>
-              onChange({
+              setState({
                 ...state,
                 hasHeader: event.target.checked,
               })
