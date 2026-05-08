@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .controllers.dataset_controller import router as dataset_router
 from .controllers.classification_controller import router as classification_router
+from .controllers.hyperplane_controller import router as hyperplane_router
 
 
 def create_app() -> FastAPI:
@@ -10,11 +11,8 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:5173",
-            "http://127.0.0.1:5173",
-        ],
-        allow_credentials=True,
+        allow_origins=["*"],
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -29,6 +27,7 @@ def create_app() -> FastAPI:
 
     app.include_router(dataset_router)
     app.include_router(classification_router)
+    app.include_router(hyperplane_router)
 
     return app
 

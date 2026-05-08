@@ -1,19 +1,18 @@
 import { useState } from "react";
+import { Layout, type AppView } from "./components/layout/Layout";
 import { ClassificationView } from "./views/ClassificationView";
+import { HyperplaneView } from "./views/HyperplaneView";
 import { ImportView } from "./views/ImportView";
-
-type AppView = "import" | "classification";
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>("import");
 
   return (
-    <>
-      {currentView === "import" && <ImportView onNavigate={setCurrentView} />}
-      {currentView === "classification" && (
-        <ClassificationView onNavigate={setCurrentView} />
-      )}
-    </>
+    <Layout currentView={currentView} onViewChange={setCurrentView}>
+      {currentView === "import" && <ImportView />}
+      {currentView === "classification" && <ClassificationView />}
+      {currentView === "hyperplane" && <HyperplaneView />}
+    </Layout>
   );
 }
 

@@ -14,6 +14,12 @@ pip install -r requirements.txt
 python -m app.cli --reload
 ```
 
+## Build a standalone backend binary
+
+```bash
+python build_backend.py
+```
+
 ## Health check
 
 ```bash

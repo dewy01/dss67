@@ -2,6 +2,8 @@ import argparse
 
 import uvicorn
 
+from app.main import create_app
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run FastAPI backend")
@@ -10,8 +12,9 @@ def main() -> None:
     parser.add_argument("--reload", action="store_true")
     args = parser.parse_args()
 
+    app = create_app()
     uvicorn.run(
-        "app.main:app",
+        app,
         host=args.host,
         port=args.port,
         reload=args.reload,

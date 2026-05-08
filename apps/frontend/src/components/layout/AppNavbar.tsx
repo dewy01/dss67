@@ -8,6 +8,7 @@ export type AppNavbarProps = {
   isSubmitting: boolean;
   onSubmit: () => void;
   onNavigateToClassification?: () => void;
+  onNavigateToHyperplane?: () => void;
 };
 
 export function AppNavbar({
@@ -15,6 +16,7 @@ export function AppNavbar({
   isSubmitting,
   onSubmit,
   onNavigateToClassification,
+  onNavigateToHyperplane,
 }: AppNavbarProps) {
   return (
     <div className="sticky top-0 z-40 border-b border-border/60 bg-card/85 backdrop-blur">
@@ -31,6 +33,11 @@ export function AppNavbar({
           {onNavigateToClassification && (
             <Button onClick={onNavigateToClassification} variant="default">
               Classification
+            </Button>
+          )}
+          {onNavigateToHyperplane && (
+            <Button onClick={onNavigateToHyperplane} variant="default">
+              Hyperplane Classifier
             </Button>
           )}
           <Popover>
