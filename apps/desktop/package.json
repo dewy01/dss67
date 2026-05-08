@@ -1,14 +1,85 @@
 {
-  "name": "desktop",
+  "name": "decision-support-studio",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "description": "A desktop decision support system with classification and hyperplane analysis",
+  "author": "DSS67 Contributors",
+  "license": "MIT",
+  "main": "electron-main.cjs",
+  "homepage": "https://github.com/yourusername/dss67",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/dss67.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "scripts": {
+    "dev": "node scripts/dev.cjs",
+    "build:frontend": "npm --prefix ../frontend run build",
+    "build:backend": "python ../../services/backend/build_backend.py",
+    "build": "node scripts/build.cjs",
+    "build:win": "node scripts/build.cjs win32",
+    "build:mac": "node scripts/build.cjs darwin",
+    "build:all": "node scripts/build.cjs all",
+    "start": "electron ."
+  },
+  "keywords": [
+    "decision-support",
+    "classification",
+    "machine-learning",
+    "data-analysis"
+  ],
+  "build": {
+    "appId": "com.dss67.desktop",
+    "productName": "Decision Support Studio",
+    "directories": {
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron-main.cjs",
+      "preload.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": "../frontend/dist",
+        "to": "frontend"
+      },
+      {
+        "from": "../../services/backend/dist",
+        "to": "backend"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.utilities",
+      "identity": null
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150,
+          "type": "file"
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "cross-env": "^10.1.0",

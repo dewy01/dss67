@@ -1,0 +1,34 @@
+{
+  "name": "dss67",
+  "version": "1.0.0",
+  "description": "Decision Support Studio",
+  "private": true,
+  "author": "DSS67",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dewy01/dss67"
+  },
+  "scripts": {
+    "dev": "npm --prefix apps/desktop run dev",
+    "dev:frontend": "npm --prefix apps/frontend run dev",
+    "dev:backend": "python -m app.cli --reload",
+    "build": "node build.cjs current",
+    "build:win": "node build.cjs windows",
+    "build:mac": "node build.cjs mac",
+    "build:all": "node build.cjs all",
+    "clean": "rimraf apps/frontend/dist apps/desktop/dist services/backend/dist services/backend/build"
+  },
+  "workspaces": [
+    "apps/frontend",
+    "apps/desktop",
+    "services/backend"
+  ],
+  "devDependencies": {
+    "rimraf": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
