@@ -62,14 +62,32 @@ export function ImportPreview({
                   key={`row-${rowIndex}`}
                   className="border-b border-border/70"
                 >
-                  {row.map((cell, cellIndex) => (
-                    <td
-                      key={`cell-${rowIndex}-${cellIndex}`}
-                      className="px-3 py-2"
-                    >
-                      {cell}
-                    </td>
-                  ))}
+                  {row.map((cell, cellIndex) => {
+                    const columnName = data.columns[cellIndex];
+                    const isLow = Boolean(
+                      data.extremes?.lowest?.[columnName]?.includes(rowIndex),
+                    );
+                    const isHigh = Boolean(
+                      data.extremes?.highest?.[columnName]?.includes(rowIndex),
+                    );
+
+                    let cellClass = "px-3 py-2";
+                    if (isLow) {
+                      cellClass += " font-semibold text-amber-700 bg-amber-50";
+                    }
+                    if (isHigh) {
+                      cellClass += " font-semibold text-rose-700 bg-rose-50";
+                    }
+
+                    return (
+                      <td
+                        key={`cell-${rowIndex}-${cellIndex}`}
+                        className={cellClass}
+                      >
+                        {cell}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

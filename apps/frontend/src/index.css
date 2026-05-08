@@ -34,7 +34,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
+  /* background: repeating-linear-gradient(
       120deg,
       rgba(255, 255, 255, 0.6),
       rgba(255, 255, 255, 0.6) 1px,
@@ -43,7 +43,7 @@ body::before {
     ),
     radial-gradient(circle at 15% 20%, rgba(255, 140, 90, 0.15), transparent 55%),
     radial-gradient(circle at 85% 15%, rgba(34, 165, 132, 0.12), transparent 50%);
-  pointer-events: none;
+  pointer-events: none; */
   z-index: -1;
 }
 
