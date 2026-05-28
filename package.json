@@ -17,6 +17,8 @@
     "build:win": "node build.cjs windows",
     "build:mac": "node build.cjs mac",
     "build:all": "node build.cjs all",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
     "clean": "rimraf apps/frontend/dist apps/desktop/dist services/backend/dist services/backend/build"
   },
   "workspaces": [
