@@ -26,6 +26,24 @@ export type HyperplaneResponse = {
   regionClasses: Record<string, string>;
   linearSeparability: LinearSeparability;
   nHyperplanes: number;
+  totalCuts: number;
+  totalSeparatedPoints: number;
+  axisStatistics: Array<{
+    axis: number;
+    axis_name: string;
+    cuts: number;
+    separated_points: number;
+  }>;
+  cutHistory: Array<{
+    step: number;
+    axis: number;
+    axis_name: string;
+    threshold: number;
+    direction: "positive" | "negative";
+    separated_points: number;
+    remaining_points: number;
+    separated_ratio: number;
+  }>;
 };
 
 export type DownloadResponse = {

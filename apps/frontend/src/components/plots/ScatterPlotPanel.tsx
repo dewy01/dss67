@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useI18n } from "../../i18n/I18nProvider";
 import {
   Card,
   CardContent,
@@ -66,6 +67,7 @@ const isNumericColumn = (rows: string[][], index: number) => {
 };
 
 export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
+  const { t } = useI18n();
   const plotRef = useRef<HTMLDivElement>(null);
 
   const numericColumns = useMemo(
@@ -78,8 +80,8 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
     xColumn: numericColumns[0] ?? "",
     yColumn: numericColumns[1] ?? numericColumns[0] ?? "",
     zColumn: numericColumns[2] ?? "",
-    classColumn: "",
-    useClassStyle: false,
+    classColumn: columns[columns.length - 1] ?? "",
+    useClassStyle: true,
   });
 
   const safeAxes = useMemo(() => {
@@ -261,16 +263,13 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Scatter plots</CardTitle>
-        <CardDescription>
-          Plot two or three variables. Optionally color and mark points by a
-          class column.
-        </CardDescription>
+        <CardTitle>{t("scatter.title")}</CardTitle>
+        <CardDescription>{t("scatter.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Mode</label>
+            <label className="text-sm font-medium">{t("scatter.mode")}</label>
             <select
               className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={state.mode}
@@ -286,7 +285,7 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">X axis</label>
+            <label className="text-sm font-medium">{t("scatter.xAxis")}</label>
             <select
               className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm"
               value={safeAxes.xColumn}
@@ -302,7 +301,7 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Y axis</label>
+            <label className="text-sm font-medium">{t("scatter.yAxis")}</label>
             <select
               className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm"
               value={safeAxes.yColumn}
@@ -321,7 +320,7 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
 
         {state.mode === "3d" ? (
           <div className="space-y-2">
-            <label className="text-sm font-medium">Z axis</label>
+            <label className="text-sm font-medium">{t("scatter.zAxis")}</label>
             <select
               className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm"
               value={safeAxes.zColumn}
@@ -338,10 +337,10 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
           </div>
         ) : null}
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 items-center">
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              Class column (optional)
+              {t("scatter.classColumn")}
             </label>
             <select
               className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm"
@@ -353,7 +352,7 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
                 }))
               }
             >
-              <option value="">None</option>
+              <option value="">{t("scatter.none")}</option>
               {columns.map((column) => (
                 <option key={column} value={column}>
                   {column}
@@ -361,20 +360,25 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
               ))}
             </select>
           </div>
-          <label className="flex items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
-              checked={state.useClassStyle}
-              onChange={(event) =>
-                setState((prev) => ({
-                  ...prev,
-                  useClassStyle: event.target.checked,
-                }))
-              }
-            />
-            Color/marker by class
-          </label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              {t("scatter.classColoring")}
+            </label>
+            <label className="flex items-center gap-3 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
+                checked={state.useClassStyle}
+                onChange={(event) =>
+                  setState((prev) => ({
+                    ...prev,
+                    useClassStyle: event.target.checked,
+                  }))
+                }
+              />
+              {t("scatter.colorByClass")}
+            </label>
+          </div>
         </div>
 
         <div
@@ -391,8 +395,8 @@ export function ScatterPlotPanel({ columns, rows }: ScatterPlotPanelProps) {
           {!hasTraces ? (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
               {hasNumericColumns
-                ? "No numeric data for the selected axes."
-                : "No numeric columns available for plotting."}
+                ? t("scatter.noNumericAxes")
+                : t("scatter.noNumericColumns")}
             </div>
           ) : null}
         </div>

@@ -5,6 +5,7 @@ from typing import Iterable
 
 def _pick_delimiter(line: str) -> str:
     candidates = [
+        (",", ","),
         (";", ";"),
         ("\t", "\t"),
         (" ", "whitespace"),

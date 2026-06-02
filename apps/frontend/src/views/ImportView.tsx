@@ -28,7 +28,6 @@ export function ImportView() {
       delimiter: state.delimiter,
       commentPrefix: state.commentPrefix,
       sheetName: state.sheetName,
-      maxPreviewRows: 50,
     }),
     onSuccess: (data) => {
       setPreview(data);
@@ -122,7 +121,6 @@ export function ImportView() {
                 datasetId: datasetId ?? "",
                 columns: [column],
                 percent,
-                maxPreviewRows: 50,
               })
             }
           />

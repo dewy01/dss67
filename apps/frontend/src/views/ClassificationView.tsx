@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { useI18n } from "../i18n/I18nProvider";
 import { useDatasetStore } from "../store/datasetStore";
 import type {
   ClassificationMethod,
@@ -27,6 +28,7 @@ import type {
 type ClassificationMode = "quality" | "classify";
 
 export function ClassificationView() {
+  const { t } = useI18n();
   const [mode, setMode] = useState<ClassificationMode>("quality");
   const [classColumnIndex, setClassColumnIndex] = useState<number>(0);
   const [selectedMethods, setSelectedMethods] = useState<
@@ -131,7 +133,7 @@ export function ClassificationView() {
   if (!hasDataset) {
     return (
       <div className="mx-auto max-w-5xl px-6 py-10 text-center">
-        <ImportError message="Please import a dataset first" />
+        <ImportError message={t("import.datasetRequired")} />
       </div>
     );
   }
@@ -140,10 +142,8 @@ export function ClassificationView() {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-10 md:px-12">
       <Card>
         <CardHeader>
-          <CardTitle>Classification Tool</CardTitle>
-          <CardDescription>
-            Select a mode and configure classifiers
-          </CardDescription>
+          <CardTitle>{t("classification.title")}</CardTitle>
+          <CardDescription>{t("classification.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -152,19 +152,19 @@ export function ClassificationView() {
                 onClick={() => setMode("quality")}
                 variant={mode === "quality" ? "default" : "outline"}
               >
-                Assess Quality
+                {t("classification.mode.quality")}
               </Button>
               <Button
                 onClick={() => setMode("classify")}
                 variant={mode === "classify" ? "default" : "outline"}
               >
-                Classify New Object
+                {t("classification.mode.classify")}
               </Button>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Class Column (Decision Attribute)
+                {t("classification.classColumn")}
               </label>
               <select
                 value={classColumnIndex}
@@ -173,7 +173,7 @@ export function ClassificationView() {
               >
                 {preview?.columns.map((col, idx) => (
                   <option key={idx} value={idx}>
-                    {col} (index {idx})
+                    {col}
                   </option>
                 ))}
               </select>
@@ -184,12 +184,18 @@ export function ClassificationView() {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Classification Methods</h2>
-          {selectedMethods.length < availableMethods.length && (
-            <Button onClick={handleAddMethod} variant="outline" size="sm">
-              Add Method
-            </Button>
-          )}
+          <h2 className="text-xl font-semibold">
+            {t("classification.methods")}
+          </h2>
+
+          <Button
+            onClick={handleAddMethod}
+            variant="outline"
+            size="sm"
+            disabled={selectedMethods.length >= availableMethods.length}
+          >
+            {t("classification.addMethod")}
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -198,7 +204,6 @@ export function ClassificationView() {
               key={method}
               method={method}
               onParamsChange={(params) => handleParamChange(method, params)}
-              onAdd={handleAddMethod}
               canRemove={selectedMethods.length > 1}
               onRemove={() => handleRemoveMethod(method)}
             />
@@ -214,8 +219,8 @@ export function ClassificationView() {
             className="w-full"
           >
             {qualityMutation.isPending
-              ? "Assessing Quality..."
-              : "Assess Classification Quality (Leave-One-Out)"}
+              ? t("classification.assessing")
+              : t("classification.assessButton")}
           </Button>
 
           {qualityMutation.isError && (
@@ -233,17 +238,16 @@ export function ClassificationView() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>New Object to Classify</CardTitle>
+              <CardTitle>{t("classification.newObjectTitle")}</CardTitle>
               <CardDescription>
-                Enter attribute values separated by comma, semicolon, space, or
-                tab (exclude class attribute)
+                {t("classification.newObjectDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <textarea
                 value={newObject}
                 onChange={(e) => setNewObject(e.target.value)}
-                placeholder="e.g., 5.1, 3.5; 1.4 0.2"
+                placeholder={t("classification.newObjectPlaceholder")}
                 className="flex min-h-24 w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
               />
               <Button
@@ -252,8 +256,8 @@ export function ClassificationView() {
                 className="w-full"
               >
                 {classifyMutation.isPending
-                  ? "Classifying..."
-                  : "Classify Object"}
+                  ? t("classification.classifying")
+                  : t("classification.classifyButton")}
               </Button>
             </CardContent>
           </Card>

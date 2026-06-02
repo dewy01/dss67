@@ -22,9 +22,7 @@ export function AppNavbar({
     <div className="sticky top-0 z-40 border-b border-border/60 bg-card/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-12">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold md:text-3xl">
-            Decision Support Studio
-          </h1>
+          <h1 className="text-2xl font-semibold md:text-3xl">DSS67</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <CardDescription className="text-sm">

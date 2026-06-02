@@ -46,7 +46,7 @@ async def import_text_dataset(
     delimiter: str = Form("auto"),
     has_header: bool = Form(False),
     comment_prefix: str = Form("#"),
-    max_preview_rows: int = Form(50),
+    max_preview_rows: int | None = Form(None),
 ) -> dict:
     if not file.filename:
         raise HTTPException(status_code=400, detail="File is required")
@@ -81,7 +81,7 @@ async def import_excel_dataset(
     file: UploadFile = File(...),
     sheet_name: str | None = Form(None),
     has_header: bool = Form(True),
-    max_preview_rows: int = Form(50),
+    max_preview_rows: int | None = Form(None),
 ) -> dict:
     if not file.filename:
         raise HTTPException(status_code=400, detail="File is required")
@@ -106,7 +106,7 @@ async def import_excel_dataset(
 
 
 @router.get("/{dataset_id}/preview")
-def get_preview(dataset_id: str, max_preview_rows: int = 50) -> dict:
+def get_preview(dataset_id: str, max_preview_rows: int | None = None) -> dict:
     dataset = data_store.get(dataset_id)
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")

@@ -1,3 +1,5 @@
+import { useI18n } from "../../i18n/I18nProvider";
+import type { TranslationKey } from "../../i18n/translations";
 import type { QualityAssessmentResult } from "../../types/classification";
 import {
   Card,
@@ -13,13 +15,14 @@ type QualityResultsProps = {
 };
 
 export function QualityResults({ results, isLoading }: QualityResultsProps) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="text-center text-muted-foreground">
-            Assessing classification quality using leave-one-out
-            cross-validation...
+            {t("quality.loading")}
           </div>
         </CardContent>
       </Card>
@@ -36,10 +39,8 @@ export function QualityResults({ results, isLoading }: QualityResultsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Classification Quality Assessment</CardTitle>
-        <CardDescription>
-          Results from leave-one-out cross-validation
-        </CardDescription>
+        <CardTitle>{t("quality.title")}</CardTitle>
+        <CardDescription>{t("quality.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -50,11 +51,13 @@ export function QualityResults({ results, isLoading }: QualityResultsProps) {
             >
               <div className="flex-1">
                 <div className="font-medium">
-                  {getMethodLabel(result.method)}
+                  {getMethodLabel(result.method, t)}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {result.correctCount} / {result.totalCount} correctly
-                  classified
+                  {t("quality.correctlyClassified", {
+                    correct: result.correctCount,
+                    total: result.totalCount,
+                  })}
                 </div>
               </div>
               <div className="text-right">
@@ -63,7 +66,7 @@ export function QualityResults({ results, isLoading }: QualityResultsProps) {
                 </div>
                 {result.accuracy === bestAccuracy && (
                   <div className="text-xs text-green-600 dark:text-green-400">
-                    Best
+                    {t("quality.best")}
                   </div>
                 )}
               </div>
@@ -81,18 +84,21 @@ export function QualityResults({ results, isLoading }: QualityResultsProps) {
   );
 }
 
-function getMethodLabel(method: string): string {
+function getMethodLabel(
+  method: string,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+): string {
   switch (method) {
     case "knn":
-      return "k-Nearest Neighbors";
+      return t("method.label.knn");
     case "naive-bayes":
-      return "Naive Bayes";
+      return t("method.label.naive-bayes");
     case "decision-tree":
-      return "Decision Tree";
+      return t("method.label.decision-tree");
     case "svm":
-      return "Support Vector Machine";
+      return t("method.label.svm");
     case "random-forest":
-      return "Random Forest";
+      return t("method.label.random-forest");
     default:
       return method;
   }

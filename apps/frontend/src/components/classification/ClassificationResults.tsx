@@ -1,3 +1,5 @@
+import { useI18n } from "../../i18n/I18nProvider";
+import type { TranslationKey } from "../../i18n/translations";
 import type { ClassificationResponse } from "../../types/classification";
 import {
   Card,
@@ -16,12 +18,14 @@ export function ClassificationResults({
   response,
   isLoading,
 }: ClassificationResultsProps) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="text-center text-muted-foreground">
-            Classifying object...
+            {t("results.loading")}
           </div>
         </CardContent>
       </Card>
@@ -41,19 +45,21 @@ export function ClassificationResults({
       <Card className="border-2 border-green-500 dark:border-green-600">
         <CardHeader>
           <CardTitle className="text-green-600 dark:text-green-400">
-            Final Classification (Ensemble Vote)
+            {t("results.finalTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center">
             <div className="mb-2 text-sm text-muted-foreground">
-              Predicted Class:
+              {t("results.predictedClass")}
             </div>
             <div className="text-4xl font-bold">{response.votedClass}</div>
           </div>
 
           <div className="mt-6 space-y-2">
-            <div className="text-sm font-medium">Vote Distribution:</div>
+            <div className="text-sm font-medium">
+              {t("results.voteDistribution")}
+            </div>
             {voteEntries.map(([classValue, votes]) => (
               <div
                 key={classValue}
@@ -83,9 +89,9 @@ export function ClassificationResults({
 
       <Card>
         <CardHeader>
-          <CardTitle>Individual Classifier Results</CardTitle>
+          <CardTitle>{t("results.individualTitle")}</CardTitle>
           <CardDescription>
-            Predictions from each classification method
+            {t("results.individualDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,10 +103,10 @@ export function ClassificationResults({
               >
                 <div>
                   <div className="font-medium">
-                    {getMethodLabel(result.method)}
+                    {getMethodLabel(result.method, t)}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Predicted:{" "}
+                    {t("results.predicted")}{" "}
                     <span className="font-semibold">
                       {result.predictedClass}
                     </span>
@@ -112,7 +118,7 @@ export function ClassificationResults({
                       {(result.confidence * 100).toFixed(1)}%
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      confidence
+                      {t("results.confidence")}
                     </div>
                   </div>
                 )}
@@ -125,18 +131,21 @@ export function ClassificationResults({
   );
 }
 
-function getMethodLabel(method: string): string {
+function getMethodLabel(
+  method: string,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+): string {
   switch (method) {
     case "knn":
-      return "k-Nearest Neighbors";
+      return t("method.label.knn");
     case "naive-bayes":
-      return "Naive Bayes";
+      return t("method.label.naive-bayes");
     case "decision-tree":
-      return "Decision Tree";
+      return t("method.label.decision-tree");
     case "svm":
-      return "Support Vector Machine";
+      return t("method.label.svm");
     case "random-forest":
-      return "Random Forest";
+      return t("method.label.random-forest");
     default:
       return method;
   }

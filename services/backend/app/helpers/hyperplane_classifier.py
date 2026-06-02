@@ -3,9 +3,10 @@ Axis-aligned hyperplane classifier - recursive space partitioning algorithm.
 Finds separating hyperplanes parallel to coordinate axes, transforms data to binary vector space.
 """
 
-from typing import List, Tuple, Dict, Any, Optional, Set
-import numpy as np
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+import numpy as np
 
 
 @dataclass
@@ -36,6 +37,9 @@ class HyperplaneClassifier:
         self.hyperplanes: List[Hyperplane] = []
         self.binary_mapping: Dict[int, Tuple[int, ...]] = {}  # Original index -> binary vector
         self.region_classes: Dict[Tuple[int, ...], str] = {}  # Binary vector -> class
+        self.axis_cut_counts: Dict[int, int] = {}
+        self.axis_separated_points: Dict[int, int] = {}
+        self.cut_history: List[Dict[str, Any]] = []
         self._load_dataset()
 
     def _load_dataset(self):
@@ -88,36 +92,67 @@ class HyperplaneClassifier:
         remaining_indices = set(range(n_samples))
         self.hyperplanes = []
         self.binary_mapping = {i: tuple() for i in range(n_samples)}
+        self.axis_cut_counts = {axis: 0 for axis in range(self.X.shape[1])}
+        self.axis_separated_points = {axis: 0 for axis in range(self.X.shape[1])}
+        self.cut_history = []
 
         iteration = 0
         while remaining_indices and iteration < max_iterations:
             iteration += 1
             best_hyperplane, separated_indices = self._find_best_hyperplane(remaining_indices)
 
-            if best_hyperplane is None or len(separated_indices) < max(1, int(n_samples * min_separation)):
+            if best_hyperplane is None or len(separated_indices) < max(1, int(len(remaining_indices) * min_separation)):
                 break
 
-            # Update binary vectors for separated points
-            for idx in separated_indices:
-                current_vector = self.binary_mapping[idx]
-                self.binary_mapping[idx] = current_vector + (1,)
+            separated_count = len(separated_indices)
+            separated_ratio = separated_count / len(remaining_indices)
+            axis = best_hyperplane.axis
+            self.axis_cut_counts[axis] += 1
+            self.axis_separated_points[axis] += separated_count
+            self.cut_history.append(
+                {
+                    "step": iteration,
+                    "axis": int(axis),
+                    "axis_name": self.dataset.columns[axis] if axis < len(self.dataset.columns) else f"attr_{axis}",
+                    "threshold": float(best_hyperplane.threshold),
+                    "direction": best_hyperplane.direction,
+                    "separated_points": separated_count,
+                    "remaining_points": len(remaining_indices),
+                    "separated_ratio": float(separated_ratio),
+                }
+            )
 
-            # Update binary vectors for remaining points
-            for idx in remaining_indices - separated_indices:
+            # Extend the binary vector for every point so all vectors keep the same length.
+            separated_set = set(separated_indices)
+            for idx in range(n_samples):
                 current_vector = self.binary_mapping[idx]
-                self.binary_mapping[idx] = current_vector + (0,)
+                self.binary_mapping[idx] = current_vector + (1 if idx in separated_set else 0,)
 
             self.hyperplanes.append(best_hyperplane)
             remaining_indices -= separated_indices
 
-        # Assign region classes
+        # Assign the dominant class for every binary region.
+        region_label_counts: Dict[Tuple[int, ...], Dict[str, int]] = {}
         for idx, binary_vec in self.binary_mapping.items():
-            if binary_vec not in self.region_classes:
-                self.region_classes[binary_vec] = self.y[idx]
+            labels = region_label_counts.setdefault(binary_vec, {})
+            label = str(self.y[idx])
+            labels[label] = labels.get(label, 0) + 1
+
+        for binary_vec, labels in region_label_counts.items():
+            self.region_classes[binary_vec] = max(labels.items(), key=lambda item: (item[1], item[0]))[0]
 
         # Build transformed dataset
         transformed_data = self._build_transformed_data()
         linear_separability = self._check_linear_separability()
+        axis_statistics = [
+            {
+                "axis": int(axis),
+                "axis_name": self.dataset.columns[axis] if axis < len(self.dataset.columns) else f"attr_{axis}",
+                "cuts": int(self.axis_cut_counts.get(axis, 0)),
+                "separated_points": int(self.axis_separated_points.get(axis, 0)),
+            }
+            for axis in range(self.X.shape[1])
+        ]
 
         return {
             "transformed_data": transformed_data,
@@ -126,16 +161,23 @@ class HyperplaneClassifier:
             "region_classes": self.region_classes,
             "linear_separability": linear_separability,
             "n_hyperplanes": len(self.hyperplanes),
+            "total_cuts": len(self.hyperplanes),
+            "total_separated_points": int(sum(self.axis_separated_points.values())),
+            "axis_statistics": axis_statistics,
+            "cut_history": self.cut_history,
         }
 
     def _find_best_hyperplane(self, remaining_indices: Set[int]) -> Tuple[Optional[Hyperplane], Set[int]]:
         """
         Find the best axis-aligned hyperplane that separates one class from others.
-        Greedy approach: maximize purity of separated region.
+        Prefer pure cuts first, then fall back to the best mixed cut if needed.
         """
         best_hyperplane = None
         best_separated = set()
-        best_score = 0
+        best_score = (-1, -1, -1.0, -1)
+        fallback_hyperplane = None
+        fallback_separated = set()
+        fallback_score = (-1, -1.0, -1)
 
         remaining_list = list(remaining_indices)
         if len(remaining_list) == 0:
@@ -158,42 +200,51 @@ class HyperplaneClassifier:
             thresholds.extend(unique_vals.tolist())
 
             for threshold in thresholds:
-                # Split: positive side (>=threshold) vs negative side (<threshold)
-                mask_positive = feature_values >= threshold
-                separated_indices = set(np.array(remaining_list)[mask_positive])
+                for direction, mask in (
+                    ("positive", feature_values >= threshold),
+                    ("negative", feature_values < threshold),
+                ):
+                    separated_indices = set(np.array(remaining_list)[mask])
 
-                if len(separated_indices) == 0 or len(separated_indices) == len(remaining_list):
-                    continue
+                    if len(separated_indices) == 0 or len(separated_indices) == len(remaining_list):
+                        continue
 
-                # Calculate purity: how homogeneous is the separated region
-                separated_classes = [self.y[idx] for idx in separated_indices]
-                class_counts = {}
-                for cls in separated_classes:
-                    class_counts[cls] = class_counts.get(cls, 0) + 1
+                    # Calculate purity: how homogeneous is the separated region
+                    separated_classes = [self.y[idx] for idx in separated_indices]
+                    class_counts = {}
+                    for cls in separated_classes:
+                        class_counts[cls] = class_counts.get(cls, 0) + 1
 
-                max_count = max(class_counts.values())
-                purity = max_count / len(separated_indices)
+                    max_count = max(class_counts.values())
+                    purity = max_count / len(separated_indices)
 
-                # Score: balance purity and separation size
-                size_score = len(separated_indices) / len(remaining_list)
-                score = purity * size_score
+                    # Prefer perfectly pure cuts first; if none exist, keep the best fallback.
+                    if purity == 1.0:
+                        score = (len(separated_indices), max_count, purity, -axis)
+                        if score > best_score:
+                            best_score = score
+                            best_hyperplane = Hyperplane(axis=axis, threshold=threshold, direction=direction)
+                            best_separated = separated_indices
+                    else:
+                        score = (max_count, purity, len(separated_indices))
+                        if score > fallback_score:
+                            fallback_score = score
+                            fallback_hyperplane = Hyperplane(axis=axis, threshold=threshold, direction=direction)
+                            fallback_separated = separated_indices
 
-                if score > best_score:
-                    best_score = score
-                    best_hyperplane = Hyperplane(axis=axis, threshold=threshold, direction="positive")
-                    best_separated = separated_indices
+        if best_hyperplane is not None:
+            return best_hyperplane, best_separated
 
-        return best_hyperplane, best_separated
+        return fallback_hyperplane, fallback_separated
 
     def _build_transformed_data(self) -> List[List[Any]]:
         """Build dataset with binary vectors instead of original features."""
         result = []
-        columns = ["binary_vector", "class"]
 
         for idx in range(len(self.X)):
             binary_vec = self.binary_mapping[idx]
-            binary_str = "".join(map(str, binary_vec)) if binary_vec else "empty"
-            result.append([binary_str, self.y[idx]])
+            binary_str = self._binary_vector_to_string(binary_vec)
+            result.append([binary_str, str(self.y[idx])])
 
         return result
 
@@ -203,11 +254,13 @@ class HyperplaneClassifier:
         Uses a simple approach: try to fit a linear classifier and check accuracy.
         """
         try:
-            from sklearn.svm import LinearSVC
             from sklearn.preprocessing import LabelEncoder
+            from sklearn.svm import LinearSVC
 
             # Encode binary vectors to numeric space
-            binary_vecs = np.array([np.array(list(v)) if v else np.array([0]) for v in self.binary_mapping.values()])
+            binary_vecs = np.array([
+                np.array(list(v)) if v else np.array([0]) for v in self.binary_mapping.values()
+            ])
             y_encoded = LabelEncoder().fit_transform(self.y)
 
             if len(np.unique(y_encoded)) < 2:
@@ -255,6 +308,10 @@ class HyperplaneClassifier:
             "axis_name": self.dataset.columns[hyperplane.axis] if hyperplane.axis < len(self.dataset.columns) else f"attr_{hyperplane.axis}",
         }
 
+    def _binary_vector_to_string(self, binary_vec: Tuple[int, ...]) -> str:
+        """Convert a binary vector tuple to a stable string representation."""
+        return "".join(map(str, binary_vec)) if binary_vec else "0"
+
     def get_transformed_csv_data(self) -> str:
         """Generate CSV string of transformed data."""
         import csv
@@ -269,7 +326,7 @@ class HyperplaneClassifier:
         # Data rows
         for idx in range(len(self.X)):
             binary_vec = self.binary_mapping[idx]
-            binary_str = "".join(map(str, binary_vec)) if binary_vec else "0"
-            writer.writerow([binary_str, self.y[idx]])
+            binary_str = self._binary_vector_to_string(binary_vec)
+            writer.writerow([binary_str, str(self.y[idx])])
 
         return output.getvalue()

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useI18n } from "../../i18n/I18nProvider";
+import type { TranslationKey } from "../../i18n/translations";
 import type {
   ClassificationMethod,
   ClassificationParams,
@@ -20,7 +22,6 @@ import {
 type MethodConfigProps = {
   method: ClassificationMethod;
   onParamsChange: (params: ClassificationParams) => void;
-  onAdd: () => void;
   canRemove: boolean;
   onRemove: () => void;
 };
@@ -28,10 +29,10 @@ type MethodConfigProps = {
 export function MethodConfig({
   method,
   onParamsChange,
-  onAdd,
   canRemove,
   onRemove,
 }: MethodConfigProps) {
+  const { t } = useI18n();
   const [params, setParams] = useState<ClassificationParams>(
     getDefaultParams(method),
   );
@@ -46,8 +47,10 @@ export function MethodConfig({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg">{getMethodLabel(method)}</CardTitle>
-            <CardDescription>{getMethodDescription(method)}</CardDescription>
+            <CardTitle className="text-lg">
+              {getMethodLabel(method, t)}
+            </CardTitle>
+            <CardDescription>{getMethodDescription(method, t)}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -84,12 +87,9 @@ export function MethodConfig({
         )}
 
         <div className="flex gap-2 pt-2">
-          <Button onClick={onAdd} variant="outline" className="flex-1">
-            Add Another Method
-          </Button>
           {canRemove && (
-            <Button onClick={onRemove} variant="ghost" className="flex-1">
-              Remove
+            <Button onClick={onRemove} variant="outline" className="flex-1">
+              {t("method.remove")}
             </Button>
           )}
         </div>
@@ -105,10 +105,11 @@ function KNNParamsInput({
   params: KNNParams;
   onChange: (p: KNNParams) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
-        Number of Neighbors (k)
+        {t("method.knn.neighbors")}
         <input
           type="number"
           min="1"
@@ -129,10 +130,11 @@ function NaiveBayesParamsInput({
   params: NaiveBayesParams;
   onChange: (p: NaiveBayesParams) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
-        Laplace Smoothing Factor
+        {t("method.nb.smoothing")}
         <input
           type="number"
           min="0"
@@ -156,10 +158,11 @@ function DecisionTreeParamsInput({
   params: DecisionTreeParams;
   onChange: (p: DecisionTreeParams) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
-        Max Depth
+        {t("method.dt.maxDepth")}
         <input
           type="number"
           min="1"
@@ -175,7 +178,7 @@ function DecisionTreeParamsInput({
         />
       </label>
       <label className="text-sm font-medium">
-        Min Samples per Leaf
+        {t("method.dt.minSamples")}
         <input
           type="number"
           min="1"
@@ -201,10 +204,11 @@ function SVMParamsInput({
   params: SVMParams;
   onChange: (p: SVMParams) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
-        Kernel
+        {t("method.svm.kernel")}
         <select
           value={params.kernel}
           onChange={(e) =>
@@ -215,13 +219,13 @@ function SVMParamsInput({
           }
           className="mt-1 flex h-9 w-full rounded-md border border-border bg-transparent px-3 text-sm"
         >
-          <option value="linear">Linear</option>
+          <option value="linear">{t("method.svm.linear")}</option>
           <option value="rbf">RBF</option>
-          <option value="poly">Polynomial</option>
+          <option value="poly">{t("method.svm.poly")}</option>
         </select>
       </label>
       <label className="text-sm font-medium">
-        Regularization Parameter (C)
+        {t("method.svm.c")}
         <input
           type="number"
           min="0.01"
@@ -236,7 +240,7 @@ function SVMParamsInput({
       </label>
       {params.kernel === "rbf" && (
         <label className="text-sm font-medium">
-          Gamma
+          {t("method.svm.gamma")}
           <input
             type="number"
             min="0.001"
@@ -264,10 +268,11 @@ function RandomForestParamsInput({
   params: RandomForestParams;
   onChange: (p: RandomForestParams) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">
-        Number of Trees
+        {t("method.rf.trees")}
         <input
           type="number"
           min="1"
@@ -283,7 +288,7 @@ function RandomForestParamsInput({
         />
       </label>
       <label className="text-sm font-medium">
-        Max Depth per Tree
+        {t("method.rf.maxDepth")}
         <input
           type="number"
           min="1"
@@ -319,35 +324,41 @@ function getDefaultParams(method: ClassificationMethod): ClassificationParams {
   }
 }
 
-function getMethodLabel(method: ClassificationMethod): string {
+function getMethodLabel(
+  method: ClassificationMethod,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+): string {
   switch (method) {
     case "knn":
-      return "k-Nearest Neighbors";
+      return t("method.label.knn");
     case "naive-bayes":
-      return "Naive Bayes";
+      return t("method.label.naive-bayes");
     case "decision-tree":
-      return "Decision Tree";
+      return t("method.label.decision-tree");
     case "svm":
-      return "Support Vector Machine";
+      return t("method.label.svm");
     case "random-forest":
-      return "Random Forest";
+      return t("method.label.random-forest");
     default:
       return method;
   }
 }
 
-function getMethodDescription(method: ClassificationMethod): string {
+function getMethodDescription(
+  method: ClassificationMethod,
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+): string {
   switch (method) {
     case "knn":
-      return "Instance-based learning algorithm that classifies based on nearest neighbors";
+      return t("method.desc.knn");
     case "naive-bayes":
-      return "Probabilistic classifier based on Bayes' theorem";
+      return t("method.desc.naive-bayes");
     case "decision-tree":
-      return "Tree-based model that learns decision rules from data";
+      return t("method.desc.decision-tree");
     case "svm":
-      return "Finds optimal hyperplane that maximizes margin between classes";
+      return t("method.desc.svm");
     case "random-forest":
-      return "Ensemble method combining multiple decision trees";
+      return t("method.desc.random-forest");
     default:
       return "";
   }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useI18n } from "../../i18n/I18nProvider";
 
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -26,6 +27,7 @@ export function ColumnTransformPopover({
   onRescale,
   onExtremes,
 }: ColumnTransformPopoverProps) {
+  const { t } = useI18n();
   const [encodeMode, setEncodeMode] = useState<"alphabetical" | "appearance">(
     "alphabetical",
   );
@@ -45,7 +47,7 @@ export function ColumnTransformPopover({
         <div className="space-y-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-              Column
+              {t("transform.column")}
             </p>
             <p className="text-sm font-semibold text-card-foreground">
               {column}
@@ -53,7 +55,9 @@ export function ColumnTransformPopover({
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium">Encode categorical</label>
+            <label className="text-xs font-medium">
+              {t("transform.encode")}
+            </label>
             <div className="flex gap-2">
               <select
                 className="flex h-9 w-full rounded-md border border-border bg-transparent px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -64,21 +68,27 @@ export function ColumnTransformPopover({
                   )
                 }
               >
-                <option value="alphabetical">Alphabetical</option>
-                <option value="appearance">Appearance</option>
+                <option value="alphabetical">
+                  {t("transform.encode.alphabetical")}
+                </option>
+                <option value="appearance">
+                  {t("transform.encode.appearance")}
+                </option>
               </select>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => onEncode(column, encodeMode)}
               >
-                Encode
+                {t("transform.encodeButton")}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium">Discretize</label>
+            <label className="text-xs font-medium">
+              {t("transform.discretize")}
+            </label>
             <div className="flex gap-2">
               <Input
                 type="number"
@@ -91,24 +101,28 @@ export function ColumnTransformPopover({
                 variant="outline"
                 onClick={() => onDiscretize(column, bins)}
               >
-                Apply
+                {t("transform.apply")}
               </Button>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium">Normalize (z-score)</span>
+            <span className="text-xs font-medium">
+              {t("transform.normalize")}
+            </span>
             <Button
               size="sm"
               variant="outline"
               onClick={() => onNormalize(column)}
             >
-              Normalize
+              {t("transform.normalizeButton")}
             </Button>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium">Rescale range</label>
+            <label className="text-xs font-medium">
+              {t("transform.rescale")}
+            </label>
             <div className="flex gap-2">
               <Input
                 type="number"
@@ -127,12 +141,14 @@ export function ColumnTransformPopover({
               className="w-full"
               onClick={() => onRescale(column, rescaleA, rescaleB)}
             >
-              Rescale
+              {t("transform.rescaleButton")}
             </Button>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium">Extremes %</label>
+            <label className="text-xs font-medium">
+              {t("transform.extremes")}
+            </label>
             <div className="flex gap-2">
               <Input
                 type="number"
@@ -148,7 +164,7 @@ export function ColumnTransformPopover({
                 variant="outline"
                 onClick={() => onExtremes(column, extremesPercent)}
               >
-                Mark
+                {t("transform.mark")}
               </Button>
             </div>
           </div>

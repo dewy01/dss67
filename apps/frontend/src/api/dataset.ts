@@ -18,7 +18,7 @@ export type ImportResponse = {
 
 export type ImportParams = {
   file: File | null;
-  sourceType: "text" | "excel";
+  sourceType: "text" | "csv" | "excel";
   hasHeader: boolean;
   delimiter: string;
   commentPrefix: string;
@@ -36,17 +36,22 @@ export function createImportDatasetMutationOptions(params: ImportParams) {
       const formData = new FormData();
       formData.append("file", params.file);
       formData.append("has_header", String(params.hasHeader));
-      formData.append("max_preview_rows", String(params.maxPreviewRows ?? 50));
+      if (params.maxPreviewRows !== undefined) {
+        formData.append("max_preview_rows", String(params.maxPreviewRows));
+      }
 
       let endpoint = "/dataset/import-text";
-      if (params.sourceType === "text") {
-        formData.append("delimiter", params.delimiter);
-        formData.append("comment_prefix", params.commentPrefix.trim() || "#");
-      } else {
+      if (params.sourceType === "excel") {
         endpoint = "/dataset/import-excel";
         if (params.sheetName.trim()) {
           formData.append("sheet_name", params.sheetName.trim());
         }
+      } else {
+        formData.append(
+          "delimiter",
+          params.sourceType === "csv" ? "," : params.delimiter,
+        );
+        formData.append("comment_prefix", params.commentPrefix.trim() || "#");
       }
 
       return apiFetch<ImportResponse>(endpoint, {
@@ -146,7 +151,7 @@ export function createExtremesMutationOptions() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           percent: params.percent,
-          max_preview_rows: params.maxPreviewRows ?? 50,
+          max_preview_rows: params.maxPreviewRows,
           columns: params.columns,
         }),
       }),

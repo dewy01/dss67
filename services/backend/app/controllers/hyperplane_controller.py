@@ -20,6 +20,10 @@ class HyperplaneResponse(BaseModel):
     regionClasses: Dict[str, str]
     linearSeparability: Dict[str, Any]
     nHyperplanes: int
+    totalCuts: int
+    totalSeparatedPoints: int
+    axisStatistics: List[Dict[str, Any]]
+    cutHistory: List[Dict[str, Any]]
 
 
 @router.post("/classify", response_model=HyperplaneResponse)
@@ -52,6 +56,10 @@ async def classify_with_hyperplanes(request: HyperplaneRequest):
             regionClasses=region_classes_str,
             linearSeparability=result["linear_separability"],
             nHyperplanes=result["n_hyperplanes"],
+            totalCuts=result["total_cuts"],
+            totalSeparatedPoints=result["total_separated_points"],
+            axisStatistics=result["axis_statistics"],
+            cutHistory=result["cut_history"],
         )
 
     except Exception as e:
