@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from typing import Any
+
+
+_DECIMAL_COMMA_PATTERN = re.compile(r"^[+-]?\d+,\d+$")
 
 
 def _as_float(value: Any) -> float | None:
@@ -15,6 +19,11 @@ def _as_float(value: Any) -> float | None:
     try:
         return float(text)
     except ValueError:
+        if _DECIMAL_COMMA_PATTERN.match(text):
+            try:
+                return float(text.replace(",", ".", 1))
+            except ValueError:
+                return None
         return None
 
 

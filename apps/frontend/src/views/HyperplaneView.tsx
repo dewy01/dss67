@@ -21,8 +21,8 @@ import type { HyperplaneResponse } from "../types/hyperplane";
 export function HyperplaneView() {
   const { t } = useI18n();
   const [classColumnIndex, setClassColumnIndex] = useState<number>(0);
-  const [maxIterations, setMaxIterations] = useState<number>(100);
-  const [minSeparation, setMinSeparation] = useState<number>(0.1);
+  const [maxIterations, setMaxIterations] = useState<number>(400);
+  const [minSeparation, setMinSeparation] = useState<number>(0.0);
   const [results, setResults] = useState<HyperplaneResponse | null>(null);
 
   const preview = useDatasetStore((store) => store.preview);
@@ -113,7 +113,7 @@ export function HyperplaneView() {
             <input
               type="range"
               min="1"
-              max="200"
+              max="400"
               value={maxIterations}
               onChange={(e) => setMaxIterations(parseInt(e.target.value))}
               className="w-full"
@@ -136,7 +136,7 @@ export function HyperplaneView() {
               className="w-full"
             />
             <p className="text-xs text-muted-foreground">
-              {t("hyperplane.minSeparationHint")}
+              {/* {t("hyperplane.minSeparationHint")} */}
             </p>
           </div>
 
@@ -198,9 +198,9 @@ export function HyperplaneView() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    {t("hyperplane.method")}
+                    {/* {t("hyperplane.method")} */}
                   </p>
-                  <p className="text-sm">{results.linearSeparability.method}</p>
+                  {/* <p className="text-sm">{results.linearSeparability.method}</p> */}
                 </div>
               </div>
             </CardContent>
@@ -216,9 +216,15 @@ export function HyperplaneView() {
                 <table className="w-full text-sm">
                   <thead className="bg-muted">
                     <tr>
-                      <th className="px-3 py-2 text-left font-medium">{t("partition.axis")}</th>
-                      <th className="px-3 py-2 text-left font-medium">{t("partition.cuts")}</th>
-                      <th className="px-3 py-2 text-left font-medium">{t("partition.separatedPoints")}</th>
+                      <th className="px-3 py-2 text-left font-medium">
+                        {t("partition.axis")}
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium">
+                        {t("partition.cuts")}
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium">
+                        {t("partition.separatedPoints")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -360,7 +366,7 @@ export function HyperplaneView() {
             <ImportError message={(downloadMutation.error as Error).message} />
           )}
 
-          {preview?.columns.length === 3 && (
+          {preview?.columns.length && preview?.columns.length >= 2 && (
             <HyperplanePartitionPlot
               columns={preview?.columns ?? []}
               rows={preview?.rows ?? []}

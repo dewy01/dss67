@@ -1,27 +1,46 @@
 from __future__ import annotations
 
+import re
 from typing import Iterable
 
 
+_DECIMAL_COMMA_PATTERN = re.compile(r"^[+-]?\d+,\d+$")
+
+
 def _pick_delimiter(line: str) -> str:
-    candidates = [
-        (",", ","),
-        (";", ";"),
+    structured_candidates = [
         ("\t", "\t"),
+        (";", ";"),
         (" ", "whitespace"),
     ]
     best = (0, "whitespace")
-    for token, label in candidates:
+    for token, label in structured_candidates:
         count = line.count(token)
         if count > best[0]:
             best = (count, label)
-    return best[1]
+
+    if best[0] > 0:
+        return best[1]
+
+    comma_count = line.count(",")
+    if comma_count > 0:
+        return ","
+
+    return "whitespace"
 
 
 def _split_line(line: str, delimiter: str) -> list[str]:
     if delimiter == "whitespace":
-        return [part for part in line.split()]
-    return [part.strip() for part in line.split(delimiter)]
+        parts = [part for part in line.split()]
+    else:
+        parts = [part.strip() for part in line.split(delimiter)]
+    return [_normalize_token(part) for part in parts]
+
+
+def _normalize_token(token: str) -> str:
+    if _DECIMAL_COMMA_PATTERN.match(token):
+        return token.replace(",", ".", 1)
+    return token
 
 
 def _filtered_lines(text: str, comment_prefix: str) -> list[str]:

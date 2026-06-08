@@ -77,7 +77,7 @@ class HyperplaneClassifier:
             parsed_data.append(parsed_row)
         return np.array(parsed_data, dtype=object)
 
-    def classify(self, max_iterations: int = 100, min_separation: float = 0.1) -> Dict[str, Any]:
+    def classify(self, max_iterations: int = 1000, min_separation: float = 0.1) -> Dict[str, Any]:
         """
         Recursively partition space using axis-aligned hyperplanes.
         
@@ -97,7 +97,7 @@ class HyperplaneClassifier:
         self.cut_history = []
 
         iteration = 0
-        while remaining_indices and iteration < max_iterations:
+        while remaining_indices :
             iteration += 1
             best_hyperplane, separated_indices = self._find_best_hyperplane(remaining_indices)
 
@@ -313,20 +313,20 @@ class HyperplaneClassifier:
         return "".join(map(str, binary_vec)) if binary_vec else "0"
 
     def get_transformed_csv_data(self) -> str:
-        """Generate CSV string of transformed data."""
         import csv
         import io
 
         output = io.StringIO()
         writer = csv.writer(output)
 
-        # Header
-        writer.writerow(["binary_vector", "original_class"])
+        n_bits = len(next(iter(self.binary_mapping.values()), ()))
 
-        # Data rows
+        header = [f"w{i+1}" for i in range(n_bits)]
+        header.append("original_class")
+        writer.writerow(header)
+
         for idx in range(len(self.X)):
-            binary_vec = self.binary_mapping[idx]
-            binary_str = self._binary_vector_to_string(binary_vec)
-            writer.writerow([binary_str, str(self.y[idx])])
+            binary_vec = list(self.binary_mapping[idx])
+            writer.writerow(binary_vec + [str(self.y[idx])])
 
         return output.getvalue()
