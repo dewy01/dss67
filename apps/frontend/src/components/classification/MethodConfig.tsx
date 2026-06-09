@@ -11,13 +11,7 @@ import type {
   SVMParams,
 } from "../../types/classification";
 import { Button } from "../ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 type MethodConfigProps = {
   method: ClassificationMethod;
@@ -50,7 +44,7 @@ export function MethodConfig({
             <CardTitle className="text-lg">
               {getMethodLabel(method, t)}
             </CardTitle>
-            <CardDescription>{getMethodDescription(method, t)}</CardDescription>
+            {/* <CardDescription>{getMethodDescription(method, t)}</CardDescription> */}
           </div>
         </div>
       </CardHeader>
@@ -344,22 +338,22 @@ function getMethodLabel(
   }
 }
 
-function getMethodDescription(
-  method: ClassificationMethod,
-  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
-): string {
-  switch (method) {
-    case "knn":
-      return t("method.desc.knn");
-    case "naive-bayes":
-      return t("method.desc.naive-bayes");
-    case "decision-tree":
-      return t("method.desc.decision-tree");
-    case "svm":
-      return t("method.desc.svm");
-    case "random-forest":
-      return t("method.desc.random-forest");
-    default:
-      return "";
-  }
-}
+// function getMethodDescription(
+//   method: ClassificationMethod,
+//   t: (key: TranslationKey, params?: Record<string, string | number>) => string,
+// ): string {
+//   switch (method) {
+//     case "knn":
+//       return t("method.desc.knn");
+//     case "naive-bayes":
+//       return t("method.desc.naive-bayes");
+//     case "decision-tree":
+//       return t("method.desc.decision-tree");
+//     case "svm":
+//       return t("method.desc.svm");
+//     case "random-forest":
+//       return t("method.desc.random-forest");
+//     default:
+//       return "";
+//   }
+// }

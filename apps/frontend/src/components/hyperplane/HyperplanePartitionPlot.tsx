@@ -203,7 +203,8 @@ export function HyperplanePartitionPlot({
       xaxis: { title: { text: safeXColumn }, zeroline: false },
       yaxis: { title: { text: safeYColumn }, zeroline: false },
       shapes: plotData.shapes,
-      annotations: plotData.annotations,
+      annotations:
+        plotData.annotations.length <= 10 ? plotData.annotations : [],
     };
 
     Plotly.newPlot(plotRef.current, plotData.traces, layout, {

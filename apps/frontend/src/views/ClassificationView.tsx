@@ -143,7 +143,7 @@ export function ClassificationView() {
       <Card>
         <CardHeader>
           <CardTitle>{t("classification.title")}</CardTitle>
-          <CardDescription>{t("classification.description")}</CardDescription>
+          {/* <CardDescription>{t("classification.description")}</CardDescription> */}
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

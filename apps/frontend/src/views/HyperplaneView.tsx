@@ -86,7 +86,7 @@ export function HyperplaneView() {
       <Card>
         <CardHeader>
           <CardTitle>{t("hyperplane.title")}</CardTitle>
-          <CardDescription>{t("hyperplane.description")}</CardDescription>
+          {/* <CardDescription>{t("hyperplane.description")}</CardDescription> */}
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
